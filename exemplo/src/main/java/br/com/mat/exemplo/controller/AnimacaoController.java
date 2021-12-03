@@ -9,6 +9,13 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.support.PagedListHolder;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +25,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -41,34 +49,50 @@ public class AnimacaoController {
 	@Autowired
 	private DubladorRepository dubladorRepository;
 	
-	@GetMapping
-//	@RequestMapping(value="/animacoes", method = RequestMethod.GET) -> Forma alternativa de fazer o "@GetMapping"
-//	@ResponseBody -> A anotação "RestController" implicita a utilização dessa anotação em todos os métodos.
-	public List<PersonagemDto> lista(String nomeDublador) {
-//		Animacao animacao = new Animacao();
-//		animacao.setNome("Animacao Teste");
-//		animacao.setAnoLancamento(2013);
+//	@GetMapping
+////	@RequestMapping(value="/animacoes", method = RequestMethod.GET) -> Forma alternativa de fazer o "@GetMapping"
+////	@ResponseBody -> A anotação "RestController" implicita a utilização dessa anotação em todos os métodos.
+//	public List<PersonagemDto> lista(String nomeDublador) {
+////		Animacao animacao = new Animacao();
+////		animacao.setNome("Animacao Teste");
+////		animacao.setAnoLancamento(2013);
+////		
+////		Dublador dublador = new Dublador();
+////		dublador.setNome("Dublador Teste");
+////		
+////		Personagem personagem = new Personagem();
+////		personagem.setNome("Personagem teste");
+////		personagem.setDublador(dublador);
+////		personagem.setOrigem(animacao);
 //		
-//		Dublador dublador = new Dublador();
-//		dublador.setNome("Dublador Teste");
+//		List<Personagem> personagens;
 //		
-//		Personagem personagem = new Personagem();
-//		personagem.setNome("Personagem teste");
-//		personagem.setDublador(dublador);
-//		personagem.setOrigem(animacao);
+//		if(nomeDublador == null) {
+//			personagens = personagemRepository.findAll();
+//			
+//		} else {
+//			personagens = personagemRepository.findByDubladorNome(nomeDublador);
+//		}
+//		return PersonagemDto.converter(personagens);
+//	}
+	@GetMapping @Cacheable(value = "personagemLista")
+//	public Page<PersonagemDto> lista(@RequestParam(required = false) String nomeDublador, 
+//			@RequestParam int paginas, @RequestParam int qtd, @RequestParam String ordenacao) {
+	public Page<PersonagemDto> lista(@RequestParam(required = false) String nomeDublador, 
+			Pageable paginacao) {
 		
-		List<Personagem> personagens;
+		Page<Personagem> personagens;
 		
 		if(nomeDublador == null) {
-			personagens = personagemRepository.findAll();
+			personagens = personagemRepository.findAll(paginacao);
 			
 		} else {
-			personagens = personagemRepository.findByDubladorNome(nomeDublador);
+			personagens = personagemRepository.findByDubladorNome(nomeDublador, paginacao);
 		}
 		return PersonagemDto.converter(personagens);
 	}
 	
-	@PostMapping @Transactional
+	@PostMapping @Transactional @CacheEvict(value = "personagemLista", allEntries = true)
 	public ResponseEntity<PersonagemDto> cadastro(@RequestBody @Valid PersonagemForm form, UriComponentsBuilder uriBuilder) {
 		Personagem personagem = form.converter(animacaoRepository, dubladorRepository);
 		personagemRepository.save(personagem);

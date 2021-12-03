@@ -2,6 +2,8 @@ package br.com.mat.exemplo.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import br.com.mat.exemplo.modelo.Personagem;
@@ -15,7 +17,8 @@ public interface PersonagemRepository extends JpaRepository<Personagem, Long> {
 	//Exemplo: A classe tem um atributo chamado nomeCurso e um relacionamento a Curso que tem um atributo "Nome"
 	//Tirando esses casos, underline é opcional
 	//List<Personagem> findByDublador_Nome(String nomeDublador);
-	List<Personagem> findByDubladorNome(String nomeDublador);
+//	List<Personagem> findByDubladorNome(String nomeDublador);
+	Page<Personagem> findByDubladorNome(String nomeDublador, Pageable paginacao);
 	
 	
 	//Exemplo de query fora dessa normatização

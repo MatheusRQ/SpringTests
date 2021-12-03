@@ -1,7 +1,8 @@
 package br.com.mat.exemplo.controller.dto;
 
-import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
 
 import br.com.mat.exemplo.modelo.Personagem;
 
@@ -52,8 +53,11 @@ public class PersonagemDto {
 		this.origem = origem;
 	}
 
-	public static List<PersonagemDto> converter(List<Personagem> lista) {
-		return lista.stream().map(PersonagemDto::new).collect(Collectors.toList());
+//	public static List<PersonagemDto> converter(List<Personagem> lista) {
+//		return lista.stream().map(PersonagemDto::new).collect(Collectors.toList());
+//	}
+	public static Page<PersonagemDto> converter(Page<Personagem> lista) {
+		return lista.map(PersonagemDto::new);
 	}
 	
 	
